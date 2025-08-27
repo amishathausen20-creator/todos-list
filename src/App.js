@@ -1,60 +1,65 @@
+import { useState } from "react";
 import "./App.css";
-import Header from "./MyComponents/Header";
-import { Todos } from "./MyComponents/Todos";
-import { Footer } from "./MyComponents/Footer";
-import { AddTodo } from "./MyComponents/AddTodo";
-import React, { useState, useEffect } from "react";
 
 function App() {
-  let initTodo;
-  if (localStorage.getItem("todos") === null) {
-    initTodo = [];
-  } else {
-    initTodo = JSON.parse(localStorage.getItem("todos"));
-  }
+  let [todoList, setTodoList] = useState([]);
 
-  const onDelete = (todo) => {
-    console.log("On Delete of todo", todo);
-    setTodos(
-      todos.filter((e) => {
-        return e !== todo;
-      })
-    );
-    localStorage.getItem(
-      "todos",
-      localStorage.setItem("todos", JSON.stringify(todos))
-    );
-  };
-  const addTodo = (title, desc) => {
-    console.log("i am adding this todo", title, desc);
-    let sno;
-    if (todos.length === 0) {
-      sno = 0;
+  let saveTodoList = (event) => {
+    event.preventDefault();
+    let todoName = event.target.todoName.value;
+    if (!todoList.includes(todoName)) {
+      let finalDoList = [...todoList, todoName];
+      setTodoList(finalDoList);
     } else {
-      sno = todos[todos.length - 1].sno + 1;
+      alert("Todo Name All ready Exist...");
     }
-    const myTodo = {
-      sno: sno,
-      title: title,
-      desc: desc,
-    };
-    setTodos([...todos, myTodo]);
-    console.log(myTodo);
   };
 
-  const [todos, setTodos] = useState(initTodo);
-  useEffect(() => {
-    localStorage.setItem("todos", JSON.stringify(todos));
-  }, [todos]);
+  let list = todoList.map((value, index) => {
+    return (
+      <TodoListItem
+        value={value}
+        key={index}
+        indexNumber={index}
+        todoList={todoList}
+        setTodoList={setTodoList}
+      />
+    );
+  });
 
   return (
-    <>
-      <Header title="My Todos List" searchBar={false} />
-      <AddTodo addTodo={addTodo} />
-      <Todos todos={todos} onDelete={onDelete} />
-      <Footer />
-    </>
+    <div className="app">
+      <div>
+        <h3 className="title">ToDo List</h3>
+        <form onSubmit={saveTodoList}>
+          <input type="text" name="todoName" />
+          <button type="submit" className="button">
+            Save
+          </button>
+        </form>
+        <div className="outerDiv">
+          <ul>{list}</ul>
+        </div>
+      </div>
+    </div>
   );
 }
-
 export default App;
+
+function TodoListItem({ value, indexNumber, todoList, setTodoList }) {
+  let [status, setStatus] = useState(false);
+
+  let deleteRow = () => {
+    let finalData = todoList.filter((v, i) => i !== indexNumber);
+    setTodoList(finalData);
+  };
+  let checkStatus = () => {
+    setStatus(!status);
+  };
+  return (
+    <li className={status ? "completeTodo" : ""} onClick={checkStatus}>
+      {indexNumber + 1} {value}
+      <span onClick={deleteRow}>&times;</span>
+    </li>
+  );
+}
